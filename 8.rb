@@ -12,6 +12,26 @@ program = File.read("8").split("\n")
 
 # part 1
 
+acc=0
+i=0
+visited=[]
+while not visited.include?(i) and i < program.size
+  visited.push(i)
+  puts "#{i} #{program[i]}"
+  line = program[i].split(" ")
+  line = [line[0].to_sym, line[1].to_i]
+  if line[0] == :acc
+  then
+    acc += line[1]
+    i += 1
+  elsif line[0] == :jmp
+    i += line[1]
+  else
+    i += 1
+  end
+    
+end
+p acc
 # part 2
 
 jmp_lines = program.each_with_index.select { |line, i| line.start_with? "jmp" }.map { |line, i| i }
