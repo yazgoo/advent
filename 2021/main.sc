@@ -66,24 +66,24 @@ def day4_play_board(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Seq[Seq[(Int
   board.map{ lines => lines.map{ x => if(x._1 == number) (number, true) else x } }
 }
 
-def day4_check_winner(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Seq[Int] = {
+def day4_score(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Seq[Int] = {
+    List(board.flatMap(_.filter(!_._2)).foldLeft(0){ (acc, i) => acc + i._1 } * number)
+}
+
+def day4_check_winner(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Boolean = {
   val lines = board.map{ line => line.filter{ x=> x._2 } }
   val cols = (0 to 4).map { col => (0 to 4).map { line => board(line)(col) }.filter(_._2) }
-  if (lines.filter(_.size == 5).size > 0 || cols.filter(_.size == 5).size > 0) 
-  {
-    List(board.flatMap(_.filter(!_._2)).foldLeft(0){ (acc, i) => acc + i._1 } * number)
-  }
-  else Nil
+  (lines.filter(_.size == 5).size > 0 || cols.filter(_.size == 5).size > 0) 
 }
 
 def day4_play(numbers: Seq[Int], boards: Seq[Seq[Seq[(Int, Boolean)]]]) : Seq[Int] = {
   numbers match {
     case number :: tail => {
       val boards_played = boards.map(day4_play_board(number, _))
-      boards_played.map(day4_check_winner(number, _)).flatten match {
-        case l @ (head :: tail) => l
-        case Nil => day4_play(tail, boards_played)
-      }
+      val winnerLoosers = boards_played.groupBy(day4_check_winner(number, _))
+      val winners = winnerLoosers.getOrElse(true, Nil)
+      val loosers = winnerLoosers.getOrElse(false, Nil)
+      winners.flatMap(day4_score(number, _)) ++ day4_play(tail, loosers)
     }
     case x => {
       Nil
@@ -91,17 +91,18 @@ def day4_play(numbers: Seq[Int], boards: Seq[Seq[Seq[(Int, Boolean)]]]) : Seq[In
   }
 }
 
-def day4_1_answer = {
+def day4_answer = {
   val in = input(4, 1).toList
   in match {
     case numbers_s :: boards_list => {
       val numbers = numbers_s.split(",").map{_.toInt}.toList
       val boards = boards_list.filter(_ != "").grouped(5).toList.map(_.map{line => line.split(" ").filter{ a => a != "" }.map{ x => (x.toInt, false) }.toList})
-      day4_play(numbers, boards)
+      val answers = day4_play(numbers, boards)
+      (/* 1stpart  */ answers.head, /* second part */ answers.last)
     }
   }
 }
 
-println(day4_1_answer)
+println(day4_answer)
 
 
