@@ -62,21 +62,23 @@ def day3_2_answer = {
   day3_filter(in, 0, true) * day3_filter(in, 0, false)
 }
 
-def day4_play_board(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Seq[Seq[(Int, Boolean)]] = {
+type BingoBoard = Seq[Seq[(Int, Boolean)]]
+
+def day4_play_board(number: Int, board: BingoBoard) : BingoBoard = {
   board.map{ lines => lines.map{ x => if(x._1 == number) (number, true) else x } }
 }
 
-def day4_score(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Seq[Int] = {
+def day4_score(number: Int, board: BingoBoard) : Seq[Int] = {
     List(board.flatMap(_.filter(!_._2)).foldLeft(0){ (acc, i) => acc + i._1 } * number)
 }
 
-def day4_check_winner(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Boolean = {
+def day4_check_winner(number: Int, board: BingoBoard) : Boolean = {
   val lines = board.map{ line => line.filter{ x=> x._2 } }
   val cols = (0 to 4).map { col => (0 to 4).map { line => board(line)(col) }.filter(_._2) }
   (lines.filter(_.size == 5).size > 0 || cols.filter(_.size == 5).size > 0) 
 }
 
-def day4_play(numbers: Seq[Int], boards: Seq[Seq[Seq[(Int, Boolean)]]]) : Seq[Int] = {
+def day4_play(numbers: Seq[Int], boards: Seq[BingoBoard]) : Seq[Int] = {
   numbers match {
     case number :: tail => {
       val boards_played = boards.map(day4_play_board(number, _))
