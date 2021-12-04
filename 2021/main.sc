@@ -62,6 +62,46 @@ def day3_2_answer = {
   day3_filter(in, 0, true) * day3_filter(in, 0, false)
 }
 
-println(day3_2_answer)
+def day4_play_board(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Seq[Seq[(Int, Boolean)]] = {
+  board.map{ lines => lines.map{ x => if(x._1 == number) (number, true) else x } }
+}
+
+def day4_check_winner(number: Int, board: Seq[Seq[(Int, Boolean)]]) : Seq[Int] = {
+  val lines = board.map{ line => line.filter{ x=> x._2 } }
+  val cols = (0 to 4).map { col => (0 to 4).map { line => board(line)(col) }.filter(_._2) }
+  if (lines.filter(_.size == 5).size > 0 || cols.filter(_.size == 5).size > 0) 
+  {
+    List(board.flatMap(_.filter(!_._2)).foldLeft(0){ (acc, i) => acc + i._1 } * number)
+  }
+  else Nil
+}
+
+def day4_play(numbers: Seq[Int], boards: Seq[Seq[Seq[(Int, Boolean)]]]) : Seq[Int] = {
+  numbers match {
+    case number :: tail => {
+      val boards_played = boards.map(day4_play_board(number, _))
+      boards_played.map(day4_check_winner(number, _)).flatten match {
+        case l @ (head :: tail) => l
+        case Nil => day4_play(tail, boards_played)
+      }
+    }
+    case x => {
+      Nil
+    }
+  }
+}
+
+def day4_1_answer = {
+  val in = input(4, 1).toList
+  in match {
+    case numbers_s :: boards_list => {
+      val numbers = numbers_s.split(",").map{_.toInt}.toList
+      val boards = boards_list.filter(_ != "").grouped(5).toList.map(_.map{line => line.split(" ").filter{ a => a != "" }.map{ x => (x.toInt, false) }.toList})
+      day4_play(numbers, boards)
+    }
+  }
+}
+
+println(day4_1_answer)
 
 
