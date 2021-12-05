@@ -104,7 +104,26 @@ def day4_answer = {
     }
   }
 }
+val day5_pattern = """(\d+),(\d+) -> (\d+),(\d+)""".r
 
-println(day4_answer)
+def day5_parse_segment(segment: String) : Seq[(Int, Int)] = {
+  val day5_pattern(x1s, y1s, x2s, y2s) = segment
+  val (x1, x2, y1, y2) = (x1s.toInt, x2s.toInt, y1s.toInt, y2s.toInt)
+  if (y1 == y2) {
+    (x1.min(x2) to x2.max(x1)).map((_, y1))
+  } else if(x1 == x2) {
+    (y1.min(y2) to y2.max(y1)).map((x1, _))
+  } else {
+    Nil
+  }
+}
+
+def day5_1_answer = {
+  val points = input(5, 1).toList.flatMap(day5_parse_segment(_))
+  val twice = points.groupBy(identity).filter(_._2.size > 1)
+  twice.size
+}
+
+println(day5_1_answer)
 
 
