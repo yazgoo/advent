@@ -145,6 +145,13 @@ def day6_1_answer = {
   }.size
 }
 
-println(day6_1_answer)
+def day6_2_answer = {
+  val fishes = input(6, 1).toList{0}.split(",").map(_.toInt).groupBy(identity).map(x => (x._1, x._2.size.toLong)).toList
+  (0 until 256).foldLeft(fishes) { (fishes, i) =>
+    fishes.flatMap(x => if (x._1 == 0) List((6, x._2), (8, x._2)) else List((x._1 - 1, x._2))).groupBy(_._1).map(x => (x._1, x._2.map(_._2).sum)).toList
+  }.map(_._2).sum
+}
+
+println(day6_2_answer)
 
 
