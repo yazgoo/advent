@@ -137,6 +137,14 @@ def day5_1_answer = day5_answer(false)
 
 def day5_2_answer = day5_answer(true)
 
-println(day5_2_answer)
+
+def day6_1_answer = {
+  val fishes = input(6, 1).toList{0}.split(",").map(_.toInt)
+  (0 until 80).foldLeft(fishes) { (fishes, _) =>
+    fishes.flatMap { fish => if (fish == 0) List(6, 8) else List(fish - 1) }
+  }.size
+}
+
+println(day6_1_answer)
 
 
