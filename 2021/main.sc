@@ -1,15 +1,35 @@
 #!/bin/env amm
 import scala.io.Source
 
-def input(day: Int) = Source.fromFile(s"input_${day}").getLines
+@main
+def main(dayOpt: Option[Int], partOpt: Option[Int]) = {
+  val method_patern = """day(\d+)_(\d+)""".r
+  val methods = getClass.getMethods.filter{ method => method_patern.matches(method.getName) }.map{ method  =>
+    val method_patern(day, part) = method.getName
+    (day.toInt, part.toInt, method)
+  }.toList.sortBy(x => (x._1, x._2))
 
-def day1_1_answer = input(1).map(_.toInt).sliding(2).map { case Seq(x, y, _*) => y > x }
+  val last = methods.last
+
+  val day = dayOpt.getOrElse(last._1) 
+  val part = dayOpt.getOrElse(last._2)
+
+  val groupedMethods = methods.groupBy { x => (x._1, x._2) }
+
+  groupedMethods.get((day, part)) map { method => 
+   method.head._3.invoke(this)
+  }
+}
+
+def input(day: Int) = Source.fromFile(s"input/${day}").getLines
+
+def day1_1 = input(1).map(_.toInt).sliding(2).map { case Seq(x, y, _*) => y > x }
   .filter{ x: Boolean => x }.size
 
-def day1_2_answer = input(1).map(_.toInt).sliding(3).map { case Seq(x, y, z, _*) => x + y + z }.sliding(2).map { case Seq(x, y, _*) => y > x }
+def day1_2 = input(1).map(_.toInt).sliding(3).map { case Seq(x, y, z, _*) => x + y + z }.sliding(2).map { case Seq(x, y, _*) => y > x }
   .filter{ x: Boolean => x }.size
 
-def day2_1_answer = { 
+def day2_1 = { 
     def x_y = input(2).map{ x : String => 
     val s = x.split(" "); (s( 0 ), s( 1 ).toInt)
     }.foldLeft((0, 0)){ (acc, command) => command match {
@@ -20,7 +40,7 @@ def day2_1_answer = {
   x_y._1 * x_y._2
 }
 
-def day2_2_answer = { 
+def day2_2 = { 
     def x_y = input(2).map{ x : String => 
     val s = x.split(" "); (s( 0 ), s( 1 ).toInt)
     }.foldLeft((0, 0, 0)){ (acc, command) => command match {
@@ -31,7 +51,7 @@ def day2_2_answer = {
   x_y._1 * x_y._2
 }
 
-def day3_1_answer = {
+def day3_1 = {
   val in = input(3).toList
   val gamma = in.map { x : String => x.map(_.toString.toInt).toList}.foldLeft(List[Int]()) { (acc, bits) =>
     acc match {
@@ -54,7 +74,7 @@ def day3_filter(measures: List[List[Int]], level: Int, more: Boolean) : Int = {
   }
 }
 
-def day3_2_answer = {
+def day3_2 = {
   val in = input(3).toList.map { x : String => x.map(_.toString.toInt).toList}
   day3_filter(in, 0, true) * day3_filter(in, 0, false)
 }
@@ -90,7 +110,7 @@ def day4_play(numbers: Seq[Int], boards: Seq[BingoBoard]) : Seq[Int] = {
   }
 }
 
-def day4_answer = {
+def day4 = {
   val in = input(4).toList
   in match {
     case numbers_s :: boards_list => {
@@ -125,25 +145,23 @@ def day5_parse_segment(segment: String, diagonals: Boolean) : Seq[(Int, Int)] = 
     points
 }
 
-def day5_answer(diagonals: Boolean) = {
+def day5(diagonals: Boolean) = {
   val points = input(5).toList.flatMap(day5_parse_segment(_, diagonals))
   val twice = points.groupBy(identity).filter(_._2.size > 1)
   twice.size
 }
 
-def day5_1_answer = day5_answer(false)
+def day5_1 = day5(false)
 
-def day5_2_answer = day5_answer(true)
+def day5_2 = day5(true)
 
-def day6_answer(days: Int) = {
+def day6(days: Int) = {
   val fishes = input(6).toList{0}.split(",").map(_.toInt).groupBy(identity).map(x => (x._1, x._2.size.toLong)).toList
   (0 until days).foldLeft(fishes) { (fishes, i) =>
     fishes.flatMap(x => if (x._1 == 0) List((6, x._2), (8, x._2)) else List((x._1 - 1, x._2))).groupBy(_._1).map(x => (x._1, x._2.map(_._2).sum)).toList
   }.map(_._2).sum
 }
 
-def day6_1_answer = day6_answer(80)
+def day6_1 = day6(80)
 
-def day6_2_answer = day6_answer(256)
-
-println(day6_2_answer)
+def day6_2 = day6(256)
