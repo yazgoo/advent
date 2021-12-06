@@ -12,7 +12,7 @@ def main(dayOpt: Option[Int], partOpt: Option[Int]) = {
   val last = methods.last
 
   val day = dayOpt.getOrElse(last._1) 
-  val part = dayOpt.getOrElse(last._2)
+  val part = partOpt.getOrElse(last._2)
 
   val groupedMethods = methods.groupBy { x => (x._1, x._2) }
 
