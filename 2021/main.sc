@@ -166,7 +166,11 @@ def day6_1 = day6(80)
 
 def day6_2 = day6(256)
 
-def day7_1 = {
+def day7(transform: Int => Int) = {
   val positions = input(7).toList{0}.split(",").map(_.toInt)
-  (positions.min to positions.max).map{ mv => positions.map{ pos => (pos-mv).abs}.sum }.min
+  (positions.min to positions.max).map{ mv => positions.map{ pos => transform((pos-mv).abs)}.sum }.min
 }
+
+def day7_1 = day7(identity)
+
+def day7_2 = day7{x => (x*(x+1))/2}
