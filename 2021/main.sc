@@ -165,3 +165,8 @@ def day6(days: Int) = {
 def day6_1 = day6(80)
 
 def day6_2 = day6(256)
+
+def day7_1 = {
+  val positions = input(7).toList{0}.split(",").map(_.toInt)
+  (positions.min to positions.max).map{ mv => positions.map{ pos => (pos-mv).abs}.sum }.min
+}
