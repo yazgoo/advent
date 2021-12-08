@@ -174,3 +174,62 @@ def day7(transform: Int => Int) = {
 def day7_1 = day7(identity)
 
 def day7_2 = day7{x => (x*(x+1))/2}
+
+def day8_1 = input(8).toList.flatMap(_.split("\\|").last.split(" ")).filter{ x => List(2, 3, 4, 7).contains(x.size) }.size
+
+def day8_sized(finders: Array[Array[Char]], size: Int) : Seq[Char] = {
+  finders.filter(x => x.size == size)(0).toList
+}
+
+def list_contains_items(list: Seq[Char], items: Seq[Char]) : Boolean = 
+  items.map(list.contains(_)).foldLeft(true){ (acc, v) => acc && v }
+
+def list_matching_items(list: Seq[Char], items: Seq[Char]) : Int = 
+  items.map{ x => if (list.contains(x)) 1 else 0 }.foldLeft(0){ (acc, v) => acc + v }
+
+
+// 1 => size == 2
+// 7 => size == 3
+// 4 => asize = 4
+// 8 => size == 7
+//
+// 1, 4, 7, 8
+// 
+//
+// sze 6 => 9, 6, 0
+//       => contains all wires of 1 => 9 0
+//          => contains all wires of 4 => 9
+//          => !contains all wire of 4 => 0
+//       => !contains all wires of 1 => 6
+//
+// 0, 1, 4, 6, 7, 8, 9
+//
+// size 5 => 2, 3, 5
+//        => contains all wires of 1 => 3
+//        => !contains all wires of 1 => 2, 5
+//          => two wires in common with 4 => 2
+//          => three wires in common with 4 => 5
+
+def day8_2 = {
+  input(8).toList.map { line =>
+    val parts = line.split("\\|")
+    val finders = parts(0).split(" ").map(_.toCharArray.sorted)
+    val one = day8_sized(finders, 2)
+    val four = day8_sized(finders, 4)
+    val seven = day8_sized(finders, 3)
+    val eight = day8_sized(finders, 7)
+    val nine_six_zero = finders.filter(x => x.size == 6)
+    val six = nine_six_zero.filter { x => !list_contains_items(x, one) }(0).toList
+    val nine_zero = nine_six_zero.filter { x => list_contains_items(x, one) } 
+    val nine = nine_zero.filter{ x => list_contains_items(x, four) }(0).toList
+    val zero = nine_zero.filter{ x => !list_contains_items(x, four) }(0).toList
+    val two_three_five = finders.filter(x => x.size == 5)
+    val three = two_three_five.filter{ x => list_contains_items(x, one) }(0).toList
+    val two_five = two_three_five.filter{ x => !list_contains_items(x, one) }
+    val two = two_five.filter{ x => list_matching_items(x, four) == 2 }(0).toList
+    val five = two_five.filter{ x => list_matching_items(x, four) == 3 }(0).toList
+    val mapping = List(zero, one, two, three, four, five, six, seven, eight, nine)
+    val value = parts(1).split(" ").map(_.toCharArray.sorted.toList)
+    value.map { number => mapping.indexOf(number) }.filter{ _ != -1 }.foldLeft(0){ (acc, x) => x + 10 * acc}
+    }.foldLeft(0){(acc, x) => acc + x }
+}
