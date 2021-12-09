@@ -228,3 +228,18 @@ def day8_2 = {
       outputValue.map { number => digits.indexOf(number) }.foldLeft(0){ (acc, x) => x + 10 * acc}
     }.sum
 }
+
+def day9_1 = {
+  val heightMap = input(9).toList.map(x => x.toCharArray.map(c => c.toString.toInt))
+  heightMap.zipWithIndex.flatMap { case (line, y) =>
+    line.zipWithIndex.map { case (height, x) => 
+      if(List((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1))
+        .filter{ case (x, y) => x >= 0 && y >= 0 && x < line.size && y < heightMap.size }
+        .filter{ case (x, y) => heightMap(y)(x) <= height }.size == 0) {
+          height + 1
+        } else {
+          0
+        }
+    }
+  }.sum
+}
