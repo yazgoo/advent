@@ -229,17 +229,44 @@ def day8_2 = {
     }.sum
 }
 
-def day9_1 = {
-  val heightMap = input(9).toList.map(x => x.toCharArray.map(c => c.toString.toInt))
+def day9_heightMap(i: Int) = 
+  input(i).toList.map(x => x.toCharArray.map(c => c.toString.toInt).toList)
+
+def day9_low_points(heightMap: List[List[Int]]) = 
   heightMap.zipWithIndex.flatMap { case (line, y) =>
     line.zipWithIndex.map { case (height, x) => 
       if(List((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1))
         .filter{ case (x, y) => x >= 0 && y >= 0 && x < line.size && y < heightMap.size }
         .filter{ case (x, y) => heightMap(y)(x) <= height }.size == 0) {
-          height + 1
+          Some((x, y), height + 1)
         } else {
-          0
+          None
         }
     }
-  }.sum
+  }.flatten
+
+def day9_1 = day9_low_points(day9_heightMap(9)).map(_._2).sum
+
+// looks like a flood fill algo
+// https://www.freecodecamp.org/news/flood-fill-algorithm-explained/
+def day9_basin_points(acc: List[(Int, Int)], pos: (Int, Int), heightMap: List[List[Int]]) : List[(Int, Int)] = {
+  val (x, y) = pos
+  if (acc.contains(pos) || x < 0 || y < 0 || x >= heightMap(0).size || y >= heightMap.size || heightMap(y)(x) == 9) {
+    acc
+  } else {
+    val acc2 = acc ++ List(pos)
+    val up = day9_basin_points(acc2, (x, y + 1), heightMap)
+    val down = day9_basin_points(up, (x, y - 1), heightMap)
+    val left = day9_basin_points(down, (x - 1, y), heightMap)
+    val right = day9_basin_points(left, (x + 1, y), heightMap)
+    right
+  }
+}
+
+def day9_2 = {
+  val heightMap = day9_heightMap(9)
+  val lowPoints = day9_low_points(heightMap).map(_._1)
+  lowPoints.map { case (x, y) =>
+    day9_basin_points(Nil, (x, y), heightMap).size
+  }.sorted.reverse.take(3).reduce((a,b) => a * b)
 }
