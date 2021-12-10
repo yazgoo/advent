@@ -318,7 +318,7 @@ def day10_check(line: Seq[Char], stack: Seq[Int]) : Int = {
     case Nil => {
       0
     }
-    }
+  }
 }
 
 def day10_1 = {
@@ -370,7 +370,7 @@ def day10_check_2(line: Seq[Char], stack: Seq[Int]) : Long = {
         acc * 5L + (opener + 1L)
       }
     }
-    }
+  }
 }
 
 def day10_2 = {
