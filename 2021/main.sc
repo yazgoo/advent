@@ -270,3 +270,59 @@ def day9_2 = {
     day9_basin_points(Nil, (x, y), heightMap).size
   }.sorted.reverse.take(3).reduce((a,b) => a * b)
 }
+
+def day10_check(line: Seq[Char], stack: Seq[Int]) : Int = {
+  val open = List(
+    '(', 
+    '[', 
+    '{', 
+    '<', 
+    )
+  val close = List(
+    ')',
+    ']',
+    '}',
+    '>',
+    )
+  val scores = List(
+    3,
+    57,
+    1197,
+    25137,
+    )
+  line match {
+    case char :: queue => {
+      val opener = open.indexOf(char)
+      if (opener != -1) {
+        day10_check(queue, List(opener) ++ stack)
+      } else {
+        val closer = close.indexOf(char)
+        if (closer != -1) {
+          stack match {
+            case opener :: rest => {
+              if (opener == closer) {
+                day10_check(queue, rest)
+              }
+              else {
+                scores(closer)
+              }
+            }
+            case Nil => 
+              0
+          }
+        } else {
+          0
+        }
+      }
+    }
+    case Nil => {
+      0
+    }
+    }
+}
+
+def day10_1 = {
+  input(10).toList.map { line =>
+      day10_check(line.toCharArray.toList, Nil)
+    }.sum
+}
