@@ -326,3 +326,56 @@ def day10_1 = {
       day10_check(line.toCharArray.toList, Nil)
     }.sum
 }
+
+def day10_check_2(line: Seq[Char], stack: Seq[Int]) : Long = {
+  val open = List(
+    '(', 
+    '[', 
+    '{', 
+    '<', 
+    )
+  val close = List(
+    ')',
+    ']',
+    '}',
+    '>',
+    )
+  line match {
+    case char :: queue => {
+      val opener = open.indexOf(char)
+      if (opener != -1) {
+        day10_check_2(queue, List(opener) ++ stack)
+      } else {
+        val closer = close.indexOf(char)
+        if (closer != -1) {
+          stack match {
+            case opener :: rest => {
+              if (opener == closer) {
+                day10_check_2(queue, rest)
+              }
+              else {
+                0
+              }
+            }
+            case Nil => 
+              0
+          }
+        } else {
+          0
+        }
+      }
+    }
+    case Nil => {
+      stack.foldLeft(0L) { (acc, opener) =>
+        acc * 5L + (opener + 1L)
+      }
+    }
+    }
+}
+
+def day10_2 = {
+  val scores = input(10).toList.map { line =>
+      day10_check_2(line.toCharArray.toList, Nil)
+    }.filter(_ != 0).sorted
+    scores(scores.size / 2)
+}
