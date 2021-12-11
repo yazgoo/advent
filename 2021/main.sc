@@ -404,28 +404,31 @@ def day11_run(flashes: List[(Int, Int)], energies: List[List[Int]]) : (List[List
     }
 }
 
+def day11_resetFlashes(newEnergies: List[List[Int]], flashes: List[(Int, Int)]) = 
+  flashes.foldLeft(newEnergies) { (acc, flash) => acc.updated(flash._1, acc(flash._1).updated(flash._2, 0)) }
+
 def day11_1 = {
   val startEnergies = input(11).toList.map(l => l.map(_.toString.toInt).toList)
-  startEnergies
   (0 until 100).foldLeft((startEnergies, 0)) { (energiesFlashesCount, _) =>
     val (energies, flashesCount) = energiesFlashesCount
     val increasedEnergies = energies.map { line => line.map(_ + 1) }
     val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
-    (flashes.foldLeft(newEnergies) { (acc, flash) => acc.updated(flash._1, acc(flash._1).updated(flash._2, 0)) }, flashesCount + flashes.size)
+    (day11_resetFlashes(newEnergies, flashes), flashesCount + flashes.size)
   }
 }
 
-def day11_2 : Int = {
+def day11_2 = {
   val startEnergies = input(11).toList.map(l => l.map(_.toString.toInt).toList)
-  startEnergies
-  (1 until 10000).foldLeft((startEnergies, 0)) { (energiesFlashesCount, i) =>
-    val (energies, flashesCount) = energiesFlashesCount
-    val increasedEnergies = energies.map { line => line.map(_ + 1) }
-    val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
-    if (flashes.size == 100) {
-      return i
+  val initialDoneId : Option[Int] = None
+  (1 until 10000).foldLeft((startEnergies, 0, initialDoneId)) { case ((energies, flashesCount, matchingId), i) =>
+      matchingId match {
+        case None => {
+          val increasedEnergies = energies.map { line => line.map(_ + 1) }
+          val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
+          val doneId : Option[Int] = if (flashes.size == energies.size * energies(0).size) Some(i) else None
+          (day11_resetFlashes(newEnergies, flashes), flashesCount + flashes.size, doneId)
+        }
+        case Some(_) => (energies, flashesCount, matchingId)
     }
-    (flashes.foldLeft(newEnergies) { (acc, flash) => acc.updated(flash._1, acc(flash._1).updated(flash._2, 0)) }, flashesCount + flashes.size)
   }
-  -1
 }
