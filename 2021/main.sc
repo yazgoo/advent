@@ -407,9 +407,10 @@ def day11_run(flashes: List[(Int, Int)], energies: List[List[Int]]) : (List[List
 def day11_resetFlashes(newEnergies: List[List[Int]], flashes: List[(Int, Int)]) = 
   flashes.foldLeft(newEnergies) { (acc, flash) => acc.updated(flash._1, acc(flash._1).updated(flash._2, 0)) }
 
+lazy val day11_startEnergies = input(11).toList.map(l => l.map(_.toString.toInt).toList)
+
 def day11_1 = {
-  val startEnergies = input(11).toList.map(l => l.map(_.toString.toInt).toList)
-  (0 until 100).foldLeft((startEnergies, 0)) { (energiesFlashesCount, _) =>
+  (0 until 100).foldLeft((day11_startEnergies, 0)) { (energiesFlashesCount, _) =>
     val (energies, flashesCount) = energiesFlashesCount
     val increasedEnergies = energies.map { line => line.map(_ + 1) }
     val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
@@ -417,18 +418,14 @@ def day11_1 = {
   }
 }
 
+def day11_run2(energies: List[List[Int]], flashesCount: Int, i: Int) : Int = {
+  val increasedEnergies = energies.map { line => line.map(_ + 1) }
+  val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
+  if (flashes.size == energies.size * energies(0).size) {
+    i
+  } else day11_run2(day11_resetFlashes(newEnergies, flashes), flashesCount + flashes.size, i + 1)
+}
+
 def day11_2 = {
-  val startEnergies = input(11).toList.map(l => l.map(_.toString.toInt).toList)
-  val initialDoneId : Option[Int] = None
-  (1 until 10000).foldLeft((startEnergies, 0, initialDoneId)) { case ((energies, flashesCount, matchingId), i) =>
-      matchingId match {
-        case None => {
-          val increasedEnergies = energies.map { line => line.map(_ + 1) }
-          val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
-          val doneId : Option[Int] = if (flashes.size == energies.size * energies(0).size) Some(i) else None
-          (day11_resetFlashes(newEnergies, flashes), flashesCount + flashes.size, doneId)
-        }
-        case Some(_) => (energies, flashesCount, matchingId)
-    }
-  }
+  day11_run2(day11_startEnergies, 0, 1)
 }
