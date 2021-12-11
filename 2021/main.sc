@@ -379,3 +379,53 @@ def day10_2 = {
     }.filter(_ != 0).sorted
     scores(scores.size / 2)
 }
+
+def day11_run(flashes: List[(Int, Int)], energies: List[List[Int]]) : (List[List[Int]], List[(Int, Int)]) = {
+    val newFlashes = energies.zipWithIndex.flatMap { line_y =>
+      line_y._1.zipWithIndex.flatMap { item_x =>
+        if (item_x._1 > 9) {
+          Some((line_y._2, item_x._2))
+        } else {
+          None
+        }
+      }
+    }.filter(!flashes.contains(_))
+    if (newFlashes.size == 0) {
+      (energies, flashes)
+    } else {
+    val withAdjacents = newFlashes.foldLeft(energies){ case (acc, (y, x)) =>
+      val adjacents = List((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1), (y + 1, x + 1), (y - 1, x - 1), (y + 1, x - 1), (y - 1, x + 1)).filter{ case (y, x) => 0 <= y && y < energies.size && 0 <= x && x < energies(0).size }
+      adjacents.foldLeft(acc) { case (acc2, (y2, x2)) =>
+        val line = acc2(y2)
+        acc2.updated(y2, line.updated(x2, line(x2) + 1))
+      }
+    }
+    day11_run(flashes ++ newFlashes, withAdjacents)
+    }
+}
+
+def day11_1 = {
+  val startEnergies = input(11).toList.map(l => l.map(_.toString.toInt).toList)
+  startEnergies
+  (0 until 100).foldLeft((startEnergies, 0)) { (energiesFlashesCount, _) =>
+    val (energies, flashesCount) = energiesFlashesCount
+    val increasedEnergies = energies.map { line => line.map(_ + 1) }
+    val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
+    (flashes.foldLeft(newEnergies) { (acc, flash) => acc.updated(flash._1, acc(flash._1).updated(flash._2, 0)) }, flashesCount + flashes.size)
+  }
+}
+
+def day11_2 : Int = {
+  val startEnergies = input(11).toList.map(l => l.map(_.toString.toInt).toList)
+  startEnergies
+  (1 until 10000).foldLeft((startEnergies, 0)) { (energiesFlashesCount, i) =>
+    val (energies, flashesCount) = energiesFlashesCount
+    val increasedEnergies = energies.map { line => line.map(_ + 1) }
+    val (newEnergies, flashes) = day11_run(Nil, increasedEnergies)
+    if (flashes.size == 100) {
+      return i
+    }
+    (flashes.foldLeft(newEnergies) { (acc, flash) => acc.updated(flash._1, acc(flash._1).updated(flash._2, 0)) }, flashesCount + flashes.size)
+  }
+  -1
+}
