@@ -426,6 +426,4 @@ def day11_run2(energies: List[List[Int]], flashesCount: Int, i: Int) : Int = {
   } else day11_run2(day11_resetFlashes(newEnergies, flashes), flashesCount + flashes.size, i + 1)
 }
 
-def day11_2 = {
-  day11_run2(day11_startEnergies, 0, 1)
-}
+def day11_2 = day11_run2(day11_startEnergies, 0, 1)
