@@ -427,3 +427,38 @@ def day11_run2(energies: List[List[Int]], flashesCount: Int, i: Int) : Int = {
 }
 
 def day11_2 = day11_run2(day11_startEnergies, 0, 1)
+
+def day12_is_small_cave(x: String) = x.toLowerCase() == x
+
+def day12_find_paths(connections: Map[String, List[String]], smallCaves: List[String], path: List[String]) : List[List[String]] = {
+  if(smallCaves.size == 0) {
+    Nil
+  } else {
+  connections.get(path.last) match {
+    case None => Nil
+    case Some(caves) => caves.flatMap { cave =>
+      cave match {
+        case "end" => List(path ++ List("end"))
+        case other if(day12_is_small_cave(other)) => {
+          if(smallCaves.contains(other)) {
+            day12_find_paths(connections, smallCaves.filter(_ != other).toList, path ++ List(other))
+          } else {
+            Nil
+          }
+        }
+        case other => 
+            day12_find_paths(connections, smallCaves, path ++ List(other))
+      }
+
+    }
+  }
+}
+
+}
+
+def day12_1 = {
+  val connections = input(12).toList.map(_.split("-")).flatMap(x => List((x{0}, x{1}), (x{1}, x{0})))
+    .groupBy(x => x._1).mapValues(x => x.map(_._2)).toMap
+    val smallCaves = connections.keys.filter(day12_is_small_cave).toList
+  day12_find_paths(connections, smallCaves.filter(_ != "start").toList, List("start")).size
+}
