@@ -434,36 +434,36 @@ def day12_find_paths(connections: Map[String, List[String]], smallCaves: List[St
   if(smallCaves.size == 0) {
     Nil
   } else {
-  connections.get(path.last) match {
-    case None => Nil
-    case Some(caves) => caves.flatMap { cave =>
-      cave match {
-        case "end" => List(path ++ List("end"))
-        case other if(day12_is_small_cave(other)) => {
-          if(smallCaves.contains(other)) {
-            day12_find_paths(connections, smallCaves.filter(_ != other).toList, path ++ List(other))
-          } else {
-            Nil
+    connections.get(path.last) match {
+      case None => Nil
+      case Some(caves) => caves.flatMap { cave =>
+        cave match {
+          case "end" => List(path ++ List("end"))
+          case other if(day12_is_small_cave(other)) => {
+            if(smallCaves.contains(other)) {
+              day12_find_paths(connections, smallCaves.filter(_ != other).toList, path ++ List(other))
+            } else {
+              Nil
+            }
           }
+          case other => 
+              day12_find_paths(connections, smallCaves, path ++ List(other))
         }
-        case other => 
-            day12_find_paths(connections, smallCaves, path ++ List(other))
       }
-
     }
   }
 }
 
-}
+lazy val day12_connections = 
+  input(12).toList.map(_.split("-")).flatMap(x => List((x{0}, x{1}), (x{1}, x{0})))
+    .groupBy(x => x._1).mapValues(x => x.map(_._2)).toMap
 
 def day12_1 = {
-  val connections = input(12).toList.map(_.split("-")).flatMap(x => List((x{0}, x{1}), (x{1}, x{0})))
-    .groupBy(x => x._1).mapValues(x => x.map(_._2)).toMap
-    val smallCaves = connections.keys.filter(day12_is_small_cave).toList
-  day12_find_paths(connections, smallCaves.filter(_ != "start").toList, List("start")).size
+  val smallCaves = day12_connections.keys.filter(day12_is_small_cave).toList
+  day12_find_paths(day12_connections, smallCaves.filter(_ != "start").toList, List("start")).size
 }
 
-def day12_2_find_paths_(connections: Map[String, List[String]], smallCavesVisited: List[String], path: List[String]) : List[List[String]] = {
+def day12_2_find_paths(connections: Map[String, List[String]], smallCavesVisited: List[String], path: List[String]) : List[List[String]] = {
   connections.get(path.last) match {
     case None => Nil
     case Some(caves) => caves.flatMap { cave =>
@@ -471,27 +471,17 @@ def day12_2_find_paths_(connections: Map[String, List[String]], smallCavesVisite
         case "start" => Nil
         case "end" => List(path ++ List("end"))
         case other if(day12_is_small_cave(other)) => {
-          if(!smallCavesVisited.contains(other)) {
-            day12_2_find_paths_(connections, smallCavesVisited ++ List(other), path ++ List(other))
+          if(smallCavesVisited.contains(other) && smallCavesVisited.distinct != smallCavesVisited) {
+            Nil
           } else {
-            if(smallCavesVisited.distinct != smallCavesVisited) {
-              Nil
-            } else {
-              day12_2_find_paths_(connections, smallCavesVisited ++ List(other), path ++ List(other))
-            }
+            day12_2_find_paths(connections, smallCavesVisited ++ List(other), path ++ List(other))
           }
         }
         case other => 
-            day12_2_find_paths_(connections, smallCavesVisited, path ++ List(other))
+            day12_2_find_paths(connections, smallCavesVisited, path ++ List(other))
       }
-
     }
+  }
 }
 
-}
-
-def day12_2 = {
-  val connections = input(12).toList.map(_.split("-")).flatMap(x => List((x{0}, x{1}), (x{1}, x{0})))
-    .groupBy(x => x._1).mapValues(x => x.map(_._2)).toMap
-  day12_2_find_paths_(connections, Nil, List("start")).size
-}
+def day12_2 = day12_2_find_paths(day12_connections, Nil, List("start")).size
