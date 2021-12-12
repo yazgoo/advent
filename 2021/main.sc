@@ -1,4 +1,4 @@
-#!/bin/env amm
+#!./ammonite
 import scala.io.Source
 
 @main

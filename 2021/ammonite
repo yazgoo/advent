@@ -1,0 +1,9 @@
+#!/bin/env sh
+docker run --entrypoint amm \
+    -v ~/.ammonite:/root/.ammonite \
+    -v ~/.ivy2:/root/.ivy2 \
+    -v ~/.sbt:/root/.sbt \
+    -v $PWD/main.sc:/main.sc \
+    -v $PWD/input:/input \
+    -it lolhens/ammonite:2.3.8 \
+    "$@"
