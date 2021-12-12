@@ -462,3 +462,36 @@ def day12_1 = {
     val smallCaves = connections.keys.filter(day12_is_small_cave).toList
   day12_find_paths(connections, smallCaves.filter(_ != "start").toList, List("start")).size
 }
+
+def day12_2_find_paths_(connections: Map[String, List[String]], smallCavesVisited: List[String], path: List[String]) : List[List[String]] = {
+  connections.get(path.last) match {
+    case None => Nil
+    case Some(caves) => caves.flatMap { cave =>
+      cave match {
+        case "start" => Nil
+        case "end" => List(path ++ List("end"))
+        case other if(day12_is_small_cave(other)) => {
+          if(!smallCavesVisited.contains(other)) {
+            day12_2_find_paths_(connections, smallCavesVisited ++ List(other), path ++ List(other))
+          } else {
+            if(smallCavesVisited.distinct != smallCavesVisited) {
+              Nil
+            } else {
+              day12_2_find_paths_(connections, smallCavesVisited ++ List(other), path ++ List(other))
+            }
+          }
+        }
+        case other => 
+            day12_2_find_paths_(connections, smallCavesVisited, path ++ List(other))
+      }
+
+    }
+}
+
+}
+
+def day12_2 = {
+  val connections = input(12).toList.map(_.split("-")).flatMap(x => List((x{0}, x{1}), (x{1}, x{0})))
+    .groupBy(x => x._1).mapValues(x => x.map(_._2)).toMap
+  day12_2_find_paths_(connections, Nil, List("start")).size
+}
