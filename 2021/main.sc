@@ -485,3 +485,47 @@ def day12_2_find_paths(connections: Map[String, List[String]], smallCavesVisited
 }
 
 def day12_2 = day12_2_find_paths(day12_connections, Nil, List("start")).size
+
+def day13_fold(points: List[(Int, Int)], fold: (String, Int)) : List[(Int, Int)] = {
+  fold match {
+    case ("y", i) => 
+      points.map { case (x, y) =>
+        if (y > i)
+          (x, 2 * i - y)
+        else
+          (x, y)
+      }.distinct
+    case ("x", i) => 
+      points.map { case (x, y) =>
+        if (x > i)
+          (2 * i - x, y)
+        else
+          (x, y)
+      }.distinct
+  }
+}
+
+def day13_parse(i: Int) = {
+  val coordinates = """(\d+),(\d+)""".r
+  val foldInstruction = """fold along (.)=(\d+)""".r
+  val in = input(i).toList
+  val points = in.filter(coordinates.matches(_)).map{ str => val coordinates(x, y) = str; (x.toInt, y.toInt) }
+  val folds = in.filter(foldInstruction.matches(_)).map{ str => val foldInstruction(axis, value) = str; (axis, value.toInt) }
+  (points, folds)
+}
+
+def day13_1 = {
+  val (points, folds) = day13_parse(13)
+  day13_fold(points, folds(0)).length
+}
+
+def day13_2 = {
+  print("\u001Bc") // clear screen first
+  val (points, folds) = day13_parse(13)
+  folds.foldLeft(points) { (acc, fold) => 
+    day13_fold(acc, fold)
+  }.sorted.map{ case (x, y) =>
+  println(s"\u001B[${y + 10};${x*2}H██") }
+  println(s"\u001B[0;0H")
+  ()
+}
