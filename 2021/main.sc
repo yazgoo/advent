@@ -534,7 +534,7 @@ def day14_1 = {
   val in = input(14).toList
   val template = in(0).toList
   val rules = in.drop(2).map(_.split(" -> ")).map(x => (List(x{0}{0}, x{0}{1}), x{1})).toMap
-  val result = (1 to 40).foldLeft(template) { (acc, _) =>
+  val result = (1 to 10).foldLeft(template) { (acc, _) =>
     acc.sliding(2).toList.flatMap { pair =>
       rules.get(pair) match {
         case Some(polym) => List(pair{0}, polym{0})
@@ -544,4 +544,25 @@ def day14_1 = {
   }
   val ordered = result.groupBy(identity).mapValues(_.size)
   ordered.maxBy(_._2)._2 - ordered.minBy(_._2)._2
+}
+
+def day14_2 = {
+  val in = input(14).toList
+  val template = in(0).toList.sliding(2).toList.groupBy{x => (x{0}, x{1})}.mapValues(_.size.toLong)
+  val firstLast = List(in(0){0}, in(0).last)
+  val rules = in.drop(2).map(_.split(" -> ")).map(x => ((x{0}{0}, x{0}{1}), x{1}{0})).toMap
+  val result = (1 to 40).foldLeft(template) { (acc, _) =>
+     acc.flatMap { case (pair, count) =>
+      rules.get(pair) match {
+        case Some(polym) => List(((pair._1, polym), count), ((polym, pair._2), count))
+        case None => List((pair, count))
+      }
+    }.groupBy(_._1).mapValues(_.map(_._2).sum)
+  }
+  val ordered = result.flatMap(x => List((x._1._1, x._2), (x._1._2, x._2))).groupBy(_._1).mapValues(_.map(_._2).sum)
+  val max = ordered.maxBy(_._2)
+  val min = ordered.minBy(_._2)
+  val max2 = if (firstLast.contains(max._1)) max._2 + 1 else max._2
+  val min2 = if (firstLast.contains(min._1)) min._2 + 1 else min._2
+  (max2 - min2) /2
 }
