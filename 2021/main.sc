@@ -529,3 +529,19 @@ def day13_2 = {
   println(s"\u001B[0;0H")
   ()
 }
+
+def day14_1 = {
+  val in = input(14).toList
+  val template = in(0).toList
+  val rules = in.drop(2).map(_.split(" -> ")).map(x => (List(x{0}{0}, x{0}{1}), x{1})).toMap
+  val result = (1 to 40).foldLeft(template) { (acc, _) =>
+    acc.sliding(2).toList.flatMap { pair =>
+      rules.get(pair) match {
+        case Some(polym) => List(pair{0}, polym{0})
+        case None => pair.toList
+      }
+    } ++ List(template.last)
+  }
+  val ordered = result.groupBy(identity).mapValues(_.size)
+  ordered.maxBy(_._2)._2 - ordered.minBy(_._2)._2
+}
