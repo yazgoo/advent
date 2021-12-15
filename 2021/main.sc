@@ -589,39 +589,70 @@ def find_lowest_risk_dumb(risks: List[List[Int]], position: (Int, Int), total: I
 
 type Coords = (Int, Int)
 
-def unvisitedVertexWithSmallestKnownDistance(unvisited: List[Coords], shortestDistance: Map[Coords, Int]) : Option[(Coords, Int)] = {
-  unvisited.flatMap(x => shortestDistance.get(x).map((x, _))).sortBy(_._2).headOption
+import scala.collection.mutable
+
+def unvisitedVertexWithSmallestKnownDistance(unvisited: mutable.ArrayDeque[Coords], shortestDistance: mutable.Map[Coords, (Int, Boolean)]) : Option[(Coords, (Int, Boolean))] = {
+  //unvisited.flatMap(x => shortestDistance.get(x).map((x, _))).minByOption(_._2)
+  shortestDistance.filter(!_._2._2).minByOption(_._2._1)
 }
 
-def unvisitedNeighbourgs(unvisited: List[Coords], vertex: Coords) : List[Coords] = {
+def unvisitedNeighbourgs(unvisited: mutable.ArrayDeque[Coords], vertex: Coords, shortestDistance: mutable.Map[Coords, (Int, Boolean)]) : List[Coords] = {
   List((vertex._1, vertex._2 + 1), (vertex._1 + 1, vertex._2)).filter { case (y, x) =>
     unvisited.contains((y, x))
+    y < 500 && x < 500 && shortestDistance.get((y, x)).map(!_._2).getOrElse(true)
   }
 }
 
-def dijkstra(distances: List[List[Int]], visited: List[Coords], unvisited: List[Coords], shortestDistance: Map[Coords, Int]): Map[Coords, Int] = {
+@annotation.tailrec
+def dijkstra(distances: Coords => Int, unvisited: mutable.ArrayDeque[Coords], shortestDistance: mutable.Map[Coords, (Int, Boolean)]): mutable.Map[Coords, (Int, Boolean)] = {
+  if(unvisited.size % 1000 == 0) {
+    println(s"${unvisited.size}")
+  }
   unvisitedVertexWithSmallestKnownDistance(unvisited, shortestDistance) match {
     case None => shortestDistance
-    case Some((vertex, distance)) => {
-      val newShortestDistance = unvisitedNeighbourgs(unvisited, vertex).foldLeft(shortestDistance) { case (acc, (y, x)) =>
-        val newDistance = distance + distances(y)(x)
-        val updatedDistance = acc.get((y, x)) match {
+    case Some((vertex, distanceVisited)) => {
+      val distance = distanceVisited._1
+      unvisitedNeighbourgs(unvisited, vertex, shortestDistance).foreach { case (y, x) =>
+        val newDistance = distance + distances(y, x)
+        val updatedDistance = shortestDistance.get((y, x)) match {
           case None => newDistance
-          case Some(previous) => if (newDistance < previous) newDistance else previous
+          case Some((previous, _)) => if (newDistance < previous) newDistance else previous
         }
-        acc.updated((y, x), updatedDistance)
+        shortestDistance.put((y, x), (updatedDistance, false))
       }
-      dijkstra(distances, visited ++ List(vertex), unvisited.filter(_ != vertex), newShortestDistance)
+      unvisited -=  vertex
+      shortestDistance.put(vertex, (distance, true))
+      dijkstra(distances, unvisited, shortestDistance)
     }
   }
 }
 
 
-lazy val day15_risks = input(15).toList.map(l => l.map(_.toString.toInt).toList)
+lazy val day15_risks = { println("uguu"); input(15).toList.map(l => l.map(_.toString.toInt).toList) }
+
+def day15_1_distances(coords: Coords) = day15_risks(coords._1)(coords._2)
 
 def day15_1 = {
   val side = day15_risks.length
   val unvisited = (0 until side).flatMap { y => (0 until side).map((y, _)) }.toList
-  val result = dijkstra(day15_risks, List(), unvisited, Map((0, 0) -> 0))
+  val result = dijkstra(day15_1_distances, unvisited.to(mutable.ArrayDeque), Map((0, 0) -> (0, false)).to(mutable.Map))
+  result.get((side - 1, side - 1))
+}
+
+def day15_2_distances(coords: Coords) = {
+  val (y, x) = coords
+  val side = day15_risks.size
+  val dist = day15_1_distances((y % side, x % side)) + y / side + x / side
+  if (dist > 9) {
+    dist % 10 + 1
+  } else {
+    dist
+  }
+}
+
+def day15_2 = {
+  val side = day15_risks.length * 5
+  val unvisited = (0 until side).flatMap { y => (0 until side).map((y, _)) }.toList
+  val result = dijkstra(day15_2_distances, unvisited.to(mutable.ArrayDeque), Map((0, 0) -> (0, false)).to( mutable.Map ))
   result.get((side - 1, side - 1))
 }
